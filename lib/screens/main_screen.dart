@@ -85,7 +85,7 @@ class _MainScreenState extends State<MainScreen> {
                 Column(
                   children: [
                     Text(
-                      'Ustaw opóźnienie: ${delay.round()}s',
+                      'Ustaw opóźnienie: ${delay.round()}s zrob zeby sie dalo innymi kamerami',
                       style: const TextStyle(color: Colors.white),
                     ),
                     SizedBox(

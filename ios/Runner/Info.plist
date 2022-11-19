@@ -45,5 +45,9 @@
 	<false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription </key>
+	<string>In order to save images to gallery</string>
+	<key>NSCameraUsageDescription</key>
+	<string>In order to make delayed photos</string>
 </dict>
 </plist>

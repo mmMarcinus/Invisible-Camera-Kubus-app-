@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path/path.dart';
@@ -18,9 +19,8 @@ class _MainScreenState extends State<MainScreen> {
   var cameras;
   XFile? image;
   File? fileImage;
-
+  double delay = 3.0;
   void takePicture() async {
-    await Future.delayed(const Duration(seconds: 3));
     try {
       await _initializeControllerFuture;
       image = await _controller.takePicture();
@@ -33,10 +33,7 @@ class _MainScreenState extends State<MainScreen> {
 
       final imageName = basename(fileImage!.path);
       await File(image!.path).copy('${directory.path}/$imageName');
-      GallerySaver.saveImage(image!.path);
-      //print('${directory.path}/$imageName');
-      //print(localImage.path);
-
+      GallerySaver.saveImage(image!.path, albumName: 'KUBUS');
     } catch (err) {
       print(err);
     }
@@ -64,23 +61,48 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: availableCameras().then((val) => cameras = val.first),
+      future: availableCameras().then((val) => cameras = val),
       builder: (ctx, snapshot) {
         return SafeArea(
           child: Scaffold(
-            // floatingActionButton: FloatingActionButton(
-            //   onPressed: takePicture,
-            //   child: const Icon(Icons.camera_alt),
-            // ),
+            backgroundColor: const Color(0xff252525),
             body: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 if (image != null) Image.file(File(image!.path)),
                 Center(
                   child: ElevatedButton(
-                    onPressed: takePicture,
+                    onPressed: () async {
+                      print(delay);
+                      await Future.delayed(Duration(seconds: delay.round()));
+                      takePicture();
+                    },
+                    style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(60, 90)),
                     child: const Text('kubus'),
                   ),
                 ),
+                Column(
+                  children: [
+                    Text(
+                      'Ustaw opóźnienie: ${delay.round()}s',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    SizedBox(
+                      width: 300,
+                      child: CupertinoSlider(
+                          value: delay,
+                          min: 1,
+                          max: 10,
+                          divisions: 10,
+                          onChanged: (val) {
+                            setState(() {
+                              delay = val;
+                            });
+                          }),
+                    ),
+                  ],
+                )
               ],
             ),
           ),

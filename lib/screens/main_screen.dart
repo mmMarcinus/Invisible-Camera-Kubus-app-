@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart' as syspaths;
 class MainScreen extends StatefulWidget {
   final CameraDescription camera;
   const MainScreen({Key? key, required this.camera}) : super(key: key);
+  static const routeName = 'main';
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -36,6 +37,7 @@ class _MainScreenState extends State<MainScreen> {
       GallerySaver.saveImage(image!.path, albumName: 'KUBUS');
     } catch (err) {
       print(err);
+      setState(() {});
     }
   }
 
@@ -73,7 +75,6 @@ class _MainScreenState extends State<MainScreen> {
                 Center(
                   child: ElevatedButton(
                     onPressed: () async {
-                      print(delay);
                       await Future.delayed(Duration(seconds: delay.round()));
                       takePicture();
                     },
@@ -85,7 +86,7 @@ class _MainScreenState extends State<MainScreen> {
                 Column(
                   children: [
                     Text(
-                      'Ustaw opóźnienie: ${delay.round()}s zrob zeby sie dalo innymi kamerami',
+                      'Ustaw opóźnienie: ${delay.round()}s',
                       style: const TextStyle(color: Colors.white),
                     ),
                     SizedBox(

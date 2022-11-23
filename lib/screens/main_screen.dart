@@ -1,15 +1,17 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart' as syspaths;
 
 class MainScreen extends StatefulWidget {
   final CameraDescription camera;
-  const MainScreen({Key? key, required this.camera}) : super(key: key);
+  final double delay;
+  const MainScreen({Key? key, required this.camera, required this.delay})
+      : super(key: key);
   static const routeName = 'main';
 
   @override
@@ -18,9 +20,10 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   var cameras;
+  XFile? chosen_image;
   XFile? image;
   File? fileImage;
-  double delay = 3.0;
+
   void takePicture() async {
     try {
       await _initializeControllerFuture;
@@ -28,9 +31,8 @@ class _MainScreenState extends State<MainScreen> {
       final Directory directory =
           // ignore: await_only_futures
           await syspaths.getApplicationDocumentsDirectory();
-      setState(() {
-        fileImage = File(image!.path);
-      });
+
+      fileImage = File(image!.path);
 
       final imageName = basename(fileImage!.path);
       await File(image!.path).copy('${directory.path}/$imageName');
@@ -39,6 +41,25 @@ class _MainScreenState extends State<MainScreen> {
       print(err);
       setState(() {});
     }
+  }
+
+  void pickPicture() async {
+    // using your method of getting an image
+    try {
+      await ImagePicker()
+          .pickImage(source: ImageSource.gallery)
+          .then((value) async {
+        image = value;
+        final Directory pathDirectory =
+            await syspaths.getApplicationDocumentsDirectory();
+        final String cachePath = pathDirectory.path;
+        File(value!.path).copy('$cachePath/image');
+        setState(() {
+          fileImage = File(value.path);
+        });
+        return null;
+      });
+    } catch (err) {}
   }
 
   @override
@@ -63,7 +84,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: availableCameras().then((val) => cameras = val),
+      future: (availableCameras().then((val) => cameras = val)),
       builder: (ctx, snapshot) {
         return SafeArea(
           child: Scaffold(
@@ -71,39 +92,34 @@ class _MainScreenState extends State<MainScreen> {
             body: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
-                if (image != null) Image.file(File(image!.path)),
-                Center(
-                  child: ElevatedButton(
+                if (image != null)
+                  Expanded(
+                    child: GestureDetector(
+                        onTap: () async {
+                          await Future.delayed(
+                              Duration(seconds: widget.delay.round()));
+                          takePicture();
+                        },
+                        child: Image.file(File(image!.path))),
+                  ),
+                if (image == null)
+                  Center(
+                      child: ElevatedButton(
                     onPressed: () async {
-                      await Future.delayed(Duration(seconds: delay.round()));
-                      takePicture();
+                      pickPicture();
+                      //takePicture();
                     },
                     style: ElevatedButton.styleFrom(
+                        primary: Colors.transparent,
                         minimumSize: const Size(60, 90)),
-                    child: const Text('kubus'),
-                  ),
-                ),
-                Column(
-                  children: [
-                    Text(
-                      'Ustaw opóźnienie: ${delay.round()}s',
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    SizedBox(
-                      width: 300,
-                      child: CupertinoSlider(
-                          value: delay,
-                          min: 1,
-                          max: 10,
-                          divisions: 10,
-                          onChanged: (val) {
-                            setState(() {
-                              delay = val;
-                            });
-                          }),
-                    ),
-                  ],
-                )
+                    child: SizedBox(
+                        width: 60,
+                        height: 90,
+                        child: Image.asset(
+                          './assets/kubus.jpg',
+                          fit: BoxFit.cover,
+                        )),
+                  )),
               ],
             ),
           ),

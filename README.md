@@ -1,6 +1,6 @@
 # kubus_app
 
-A new Flutter project.
+Konduktor?
 
 ## Getting Started
 

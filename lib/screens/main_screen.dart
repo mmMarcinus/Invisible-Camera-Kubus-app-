@@ -23,8 +23,9 @@ class _MainScreenState extends State<MainScreen> {
   XFile? chosen_image;
   XFile? image;
   File? fileImage;
-
+  File? dummyImage;
   void takePicture() async {
+    await _controller.setFlashMode(FlashMode.off);
     try {
       await _initializeControllerFuture;
       image = await _controller.takePicture();
@@ -32,9 +33,9 @@ class _MainScreenState extends State<MainScreen> {
           // ignore: await_only_futures
           await syspaths.getApplicationDocumentsDirectory();
 
-      fileImage = File(image!.path);
+      dummyImage = File(image!.path);
 
-      final imageName = basename(fileImage!.path);
+      final imageName = basename(dummyImage!.path);
       await File(image!.path).copy('${directory.path}/$imageName');
       GallerySaver.saveImage(image!.path, albumName: 'KUBUS');
     } catch (err) {
@@ -69,7 +70,6 @@ class _MainScreenState extends State<MainScreen> {
       widget.camera,
       ResolutionPreset.medium,
     );
-
     _initializeControllerFuture = _controller.initialize();
   }
 
@@ -88,7 +88,7 @@ class _MainScreenState extends State<MainScreen> {
       builder: (ctx, snapshot) {
         return SafeArea(
           child: Scaffold(
-            backgroundColor: const Color(0xff252525),
+            backgroundColor: Colors.white,
             body: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
@@ -106,18 +106,23 @@ class _MainScreenState extends State<MainScreen> {
                   Center(
                       child: ElevatedButton(
                     onPressed: () async {
-                      pickPicture();
-                      //takePicture();
+                      if (widget.camera.lensDirection ==
+                          CameraLensDirection.front) {
+                        pickPicture();
+                      } else {
+                        takePicture();
+                      }
                     },
                     style: ElevatedButton.styleFrom(
-                        primary: Colors.transparent,
-                        minimumSize: const Size(60, 90)),
+                        elevation: 0,
+                        primary: Colors.white,
+                        minimumSize: const Size(180, 200)),
                     child: SizedBox(
-                        width: 60,
-                        height: 90,
+                        width: 180,
+                        height: 200,
                         child: Image.asset(
                           './assets/kubus.jpg',
-                          fit: BoxFit.cover,
+                          fit: BoxFit.fill,
                         )),
                   )),
               ],
